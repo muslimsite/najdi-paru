@@ -29,6 +29,14 @@ window.wordSVG = (w) => `<svg viewBox="0 0 100 100" aria-hidden="true" focusable
 // Числа 1–10: картинка — столько же кружков.
 const DOT_COLORS = ['#F29AB0', '#7CBF6B', '#F7C14B', '#6FA4D6', '#E9806E'];
 const dots = (n) => {
+  if (n > 10) {
+    const out = [], r = 7, gap = 16, rows = Math.ceil(n / 5), y0 = 50 - ((rows - 1) * gap) / 2;
+    for (let i = 0; i < n; i++) {
+      const row = Math.floor(i / 5), col = i % 5, cnt = Math.min(5, n - row * 5);
+      out.push(`<circle cx="${50 + (col - (cnt - 1) / 2) * gap}" cy="${y0 + row * gap}" r="${r}" fill="${i < 10 ? '#6FA4D6' : '#F29AB0'}"/>`);
+    }
+    return out.join('');
+  }
   const rows = n <= 5 ? [n] : [Math.ceil(n / 2), Math.floor(n / 2)];
   const r = n <= 3 ? 13 : 8.6, gap = n <= 3 ? 30 : 18.6, out = [];
   rows.forEach((cnt, ri) => {
@@ -42,6 +50,10 @@ const NUMBERS = [
   ['وَاحِد', 'вахид', 'один'], ['اِثْنَان', 'иснан', 'два'], ['ثَلَاثَة', 'саляса', 'три'], ['أَرْبَعَة', 'арбаа', 'четыре'],
   ['خَمْسَة', 'хамса', 'пять'], ['سِتَّة', 'ситта', 'шесть'], ['سَبْعَة', 'сабаа', 'семь'], ['ثَمَانِيَة', 'самания', 'восемь'],
   ['تِسْعَة', 'тиса', 'девять'], ['عَشَرَة', 'ашара', 'десять'],
+  ['أَحَدَ عَشَر', 'ахада ашар', 'одиннадцать'], ['اِثْنَا عَشَر', 'изна ашар', 'двенадцать'], ['ثَلَاثَةَ عَشَر', 'саляса ашар', 'тринадцать'],
+  ['أَرْبَعَةَ عَشَر', 'арбаата ашар', 'четырнадцать'], ['خَمْسَةَ عَشَر', 'хамсата ашар', 'пятнадцать'], ['سِتَّةَ عَشَر', 'ситта ашар', 'шестнадцать'],
+  ['سَبْعَةَ عَشَر', 'сабата ашар', 'семнадцать'], ['ثَمَانِيَةَ عَشَر', 'саманията ашар', 'восемнадцать'], ['تِسْعَةَ عَشَر', 'тисата ашар', 'девятнадцать'],
+  ['عِشْرُون', 'ишруна', 'двадцать'],
 ].map(([ar, read, ru], i) => ({ id: 'n' + (i + 1), ar, read, ru, svg: dots(i + 1) }));
 
 // Цвета: клякса краски.
@@ -52,6 +64,11 @@ const COLORS = [
   ['white', 'أَبْيَض', 'абъяд', 'белый', '#FFFFFF', '#D8C3CA'], ['black', 'أَسْوَد', 'асвад', 'чёрный', '#33292D'],
   ['orange', 'بُرْتُقَالِيّ', 'буртукали', 'оранжевый', '#F18A3A'], ['brown', 'بُنِّيّ', 'бунни', 'коричневый', '#8A5A3C'],
   ['pink', 'وَرْدِيّ', 'варди', 'розовый', '#F29AB0'], ['gray', 'رَمَادِيّ', 'рамади', 'серый', '#9A9496'],
+  ['gold', 'ذَهَبِيّ', 'захаби', 'золотой', '#E8B21E'], ['silver', 'فِضِّيّ', 'фидди', 'серебряный', '#C3CAD2'],
+  ['purple', 'بَنَفْسَجِيّ', 'бафсаджи', 'фиолетовый', '#8E5BB5'], ['turquoise', 'فَيْرُوزِيّ', 'файрузи', 'бирюзовый', '#33B5B0'],
+  ['navy', 'كُحْلِيّ', 'кухли', 'тёмно-синий', '#27407A'], ['skyblue', 'سَمَاوِيّ', 'самави', 'голубой', '#8CC8F0'],
+  ['maroon', 'عُنَّابِيّ', 'уннаби', 'бордовый', '#8E2A3E'], ['beige', 'بِيج', 'бэж', 'бежевый', '#E8D3B0'],
+  ['olive', 'زَيْتِيّ', 'зейти', 'оливковый', '#7A8A3A'], ['indigo', 'نِيلِيّ', 'нили', 'индиго', '#4B3F9A'],
 ].map(([id, ar, read, ru, fill, stroke]) => ({ id: 'c-' + id, ar, read, ru, svg: blob(fill, stroke) }));
 
 // Овощи, транспорт, погода. Картинки рисованные, без живых существ.
@@ -163,11 +180,11 @@ window.SETS = {
   items: { name: 'Предметы', words: window.WORDS },
   numbers: { name: 'Числа', words: NUMBERS },
   colors: { name: 'Цвета', words: COLORS },
-  veg: { name: 'Овощи', words: VEG },
-  transport: { name: 'Транспорт', words: TRANSPORT },
-  weather: { name: 'Погода', words: WEATHER },
-  animals: { name: 'Животные', words: ANIMALS },
-  furniture: { name: 'Мебель', words: FURNITURE },
-  clothes: { name: 'Одежда', words: CLOTHES },
-  fruits: { name: 'Фрукты', words: FRUITS },
+  veg: { name: 'Овощи', words: [...VEG, ...((window.EXTRA && window.EXTRA.veg) || [])] },
+  transport: { name: 'Транспорт', words: [...TRANSPORT, ...((window.EXTRA && window.EXTRA.transport) || [])] },
+  weather: { name: 'Погода', words: [...WEATHER, ...((window.EXTRA && window.EXTRA.weather) || [])] },
+  animals: { name: 'Животные', words: [...ANIMALS, ...((window.EXTRA && window.EXTRA.animals) || [])] },
+  furniture: { name: 'Мебель', words: [...FURNITURE, ...((window.EXTRA && window.EXTRA.furniture) || [])] },
+  clothes: { name: 'Одежда', words: [...CLOTHES, ...((window.EXTRA && window.EXTRA.clothes) || [])] },
+  fruits: { name: 'Фрукты', words: [...FRUITS, ...((window.EXTRA && window.EXTRA.fruits) || [])] },
 };
