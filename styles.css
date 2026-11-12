@@ -191,3 +191,7 @@ a { color: inherit; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
+
+/* Установка на экран телефона */
+.install { margin-top: 14px; min-height: 48px; font-size: 16px; padding: 0 24px; }
+.install-hint { margin-top: 16px; font-size: 14px; color: var(--muted); max-width: 32ch; }

@@ -7,6 +7,13 @@
   <meta name="description" content="Игра на память для детей: открывай карточки, находи пары и запоминай 20 арабских слов.">
   <meta name="theme-color" content="#FCEFF2">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="https://muslimsite.github.io/najdi-paru/">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Найди пару">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- nurtech-check-disable latin-only-font: Noto Naskh Arabic только для арабских слов на карточках, русский текст шрифтом Comfortaa -->
@@ -37,6 +44,8 @@
     </div>
     <p class="record" id="record" aria-live="polite"></p>
     <button class="btn" id="play">Играть</button>
+    <button class="btn ghost install" id="install" hidden>Поставить на экран телефона</button>
+    <p class="install-hint" id="ios-hint" hidden>Чтобы поставить игру на экран iPhone: нажми «Поделиться» внизу Safari, потом «На экран Домой».</p>
 
     <a class="made" href="https://t.me/+7o7OwzY7V0IyZmM6" target="_blank" rel="noopener">Игру сделала сама с нейросетью. Как – в канале про вайбкодинг</a>
   </main>

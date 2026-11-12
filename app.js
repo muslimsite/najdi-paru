@@ -232,6 +232,23 @@
   }
 
   /* ---------- Старт ---------- */
+  /* ---------- Установка на экран телефона ---------- */
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* без работы офлайн */ });
+  }
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  let installEvent = null;
+  addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvent = e; if (!standalone) $('install').hidden = false; });
+  $('install').addEventListener('click', async () => {
+    if (!installEvent) return;
+    installEvent.prompt();
+    try { await installEvent.userChoice; } catch { /* закрыли */ }
+    installEvent = null; $('install').hidden = true;
+  });
+  addEventListener('appinstalled', () => { $('install').hidden = true; });
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios && !standalone) $('ios-hint').hidden = false;
+
   renderLevels();
   // Для проверки: ?demo=win сразу показывает экран победы.
   if (params.get('demo') === 'win') {
