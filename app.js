@@ -3,9 +3,9 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
   const LEVELS = [
-    { name: 'Малыш', pairs: 6, peek: 2000 },
-    { name: 'Ученик', pairs: 10, peek: 3000 },
-    { name: 'Знаток', pairs: 20, peek: 4500 },
+    { name: 'Малыш', pairs: 6, peek: 6000 },
+    { name: 'Ученик', pairs: 10, peek: 10000 },
+    { name: 'Знаток', pairs: 20, peek: 18000 },
   ];
   const QUIZ_ROUNDS = 10;
   const BACKS = ['var(--b1)', 'var(--b2)', 'var(--b3)', 'var(--b4)'];
@@ -45,8 +45,8 @@
   $('go-pairs').addEventListener('click', () => { renderLevels(); show('pairs'); });
   $('go-quiz').addEventListener('click', () => startQuiz());
   document.querySelectorAll('[data-home]').forEach((b) => b.addEventListener('click', goHome));
-  $('back').addEventListener('click', () => { stopTimer(); hideToast(true); renderLevels(); show('pairs'); });
-  function goHome() { stopTimer(); hideToast(true); renderThemes(); show('home'); }
+  $('back').addEventListener('click', () => { clearTimeout(peekTimer); peekEnd = null; stopTimer(); hideToast(true); renderLevels(); show('pairs'); });
+  function goHome() { clearTimeout(peekTimer); peekEnd = null; stopTimer(); hideToast(true); renderThemes(); show('home'); }
 
   /* ---------- Найди пару: уровень ---------- */
   function renderLevels() {
@@ -104,24 +104,30 @@
     peek(L.peek);
   }
 
-  // В начале все карточки открыты на пару секунд: «Запоминай!»
+  // В начале все карточки открыты: «Запоминай!». Можно закрыть раньше кнопкой.
+  let peekTimer = 0, peekRaf = 0, peekEnd = null;
   function peek(ms) {
     const board = $('board'), cards = [...board.children];
     lock = true; board.classList.add('locked');
     cards.forEach((c, i) => setTimeout(() => c.classList.add('open'), reduced ? 0 : 40 * i));
     const bar = $('peekbar'), p = $('peek'); p.classList.add('on');
     const t0 = performance.now(), total = ms + (reduced ? 0 : 40 * cards.length);
+    cancelAnimationFrame(peekRaf);
     (function tick(now) {
       const k = Math.max(0, 1 - (now - t0) / total);
       bar.style.setProperty('--p', k);
-      if (k > 0) requestAnimationFrame(tick);
+      if (k > 0) peekRaf = requestAnimationFrame(tick);
     })(t0);
-    setTimeout(() => {
+    peekEnd = () => {
+      clearTimeout(peekTimer); cancelAnimationFrame(peekRaf); peekEnd = null;
       cards.forEach((c, i) => setTimeout(() => c.classList.remove('open'), reduced ? 0 : 25 * i));
       p.classList.remove('on');
       setTimeout(() => { lock = false; board.classList.remove('locked'); }, reduced ? 0 : 25 * cards.length + 320);
-    }, total);
+    };
+    clearTimeout(peekTimer);
+    peekTimer = setTimeout(() => peekEnd && peekEnd(), total);
   }
+  $('peek-go').addEventListener('click', () => peekEnd && peekEnd());
 
   $('board').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -148,11 +154,11 @@
 
   function miss(a, b) {
     streak = 0; lock = true;
-    setTimeout(() => { a.classList.add('miss'); b.classList.add('miss'); }, 380);
+    setTimeout(() => { a.classList.add('miss'); b.classList.add('miss'); }, 900);
     setTimeout(() => {
       [a, b].forEach((c) => { c.classList.remove('open', 'miss'); c.setAttribute('aria-label', 'Закрытая карточка'); });
       lock = false;
-    }, 1000);
+    }, 1700);
   }
 
   function updateBar() {

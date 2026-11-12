@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Арабские слова – игры для детей</title>
-  <meta name="description" content="Игры для детей: найди пару и «Что это?». 40 арабских слов: предметы, числа и цвета.">
+  <meta name="description" content="Игры «Найди пару» и «Что это?»: 110 арабских слов в 10 темах: предметы, числа, цвета, овощи, фрукты, животные, транспорт, погода, мебель, одежда.">
   <meta name="theme-color" content="#FCEFF2">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://muslimsite.github.io/najdi-paru/">
@@ -22,7 +22,7 @@
   <script src="words.js" defer></script>
   <script src="app.js" defer></script>
   <meta property="og:title" content="Арабские слова – игры для детей">
-  <meta property="og:description" content="Игры для детей: найди пару и «Что это?». 40 арабских слов: предметы, числа и цвета.">
+  <meta property="og:description" content="Игры «Найди пару» и «Что это?»: 110 арабских слов в 10 темах: предметы, числа, цвета, овощи, фрукты, животные, транспорт, погода, мебель, одежда.">
   <meta property="og:image" content="https://muslimsite.github.io/najdi-paru/og.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -42,6 +42,13 @@
       <button class="theme" role="radio" data-set="items"><b>Предметы</b><span>20 слов</span></button>
       <button class="theme" role="radio" data-set="numbers"><b>Числа</b><span>10 слов</span></button>
       <button class="theme" role="radio" data-set="colors"><b>Цвета</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="fruits"><b>Фрукты</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="veg"><b>Овощи</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="animals"><b>Животные</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="transport"><b>Транспорт</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="weather"><b>Погода</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="furniture"><b>Мебель</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="clothes"><b>Одежда</b><span>10 слов</span></button>
     </div>
 
     <div class="games">
@@ -85,7 +92,7 @@
       <div class="stat"><span id="moves">0</span><small>ходы</small></div>
       <div class="stat"><span id="time">0:00</span><small>время</small></div>
     </header>
-    <p class="peek" id="peek" aria-live="polite"><span>Запоминай!</span><i id="peekbar"></i></p>
+    <div class="peek" id="peek" aria-live="polite"><span>Запоминай!</span><i id="peekbar"></i><button class="peek-go" id="peek-go">Готово, играем</button></div>
     <div class="board" id="board"></div>
     <div class="streak" id="streak" aria-live="polite"></div>
   </section>
