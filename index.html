@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Найди пару – арабские слова для детей</title>
+  <meta name="description" content="Игра на память для детей: открывай карточки, находи пары и запоминай 20 арабских слов.">
+  <meta name="theme-color" content="#FCEFF2">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- nurtech-check-disable latin-only-font: Noto Naskh Arabic только для арабских слов на карточках, русский текст шрифтом Comfortaa -->
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="words.js" defer></script>
+  <script src="app.js" defer></script>
+  <meta property="og:title" content="Найди пару – арабские слова для детей">
+  <meta property="og:description" content="Игра на память для детей: открывай карточки, находи пары и запоминай 20 арабских слов.">
+  <meta property="og:image" content="/og.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <!-- Экран 1: начало -->
+  <main class="screen start" id="start">
+    <div class="start-arches" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <p class="kicker">Игра на память</p>
+    <h1>Найди пару</h1>
+    <p class="lead">Открывай карточки, ищи одинаковые и запоминай арабские слова.</p>
+
+    <div class="levels" role="radiogroup" aria-label="Уровень">
+      <button class="lvl" role="radio" data-level="0"><b>Малыш</b><span>6 пар</span></button>
+      <button class="lvl" role="radio" data-level="1"><b>Ученик</b><span>10 пар</span></button>
+      <button class="lvl" role="radio" data-level="2"><b>Знаток</b><span>20 пар</span></button>
+    </div>
+    <p class="record" id="record" aria-live="polite"></p>
+    <button class="btn" id="play">Играть</button>
+
+    <a class="made" href="https://t.me/+7o7OwzY7V0IyZmM6" target="_blank" rel="noopener">Игру сделала сама с нейросетью. Как – в канале про вайбкодинг</a>
+  </main>
+
+  <!-- Экран 2: игра -->
+  <section class="screen game" id="game" hidden>
+    <header class="bar">
+      <button class="icon-btn" id="back" aria-label="Выйти в меню">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="stat"><span id="found">0/6</span><small>пары</small></div>
+      <div class="stat"><span id="moves">0</span><small>ходы</small></div>
+      <div class="stat"><span id="time">0:00</span><small>время</small></div>
+    </header>
+    <p class="peek" id="peek" aria-live="polite"><span>Запоминай!</span><i id="peekbar"></i></p>
+    <div class="board" id="board"></div>
+    <div class="streak" id="streak" aria-live="polite"></div>
+  </section>
+
+  <!-- Плашка найденного слова -->
+  <div class="toast" id="toast" aria-live="polite" hidden></div>
+
+  <!-- Экран 3: победа -->
+  <section class="screen win" id="win" hidden>
+    <div class="win-head">
+      <div class="stars" id="stars" aria-hidden="true"></div>
+      <h2>МашаАллах!</h2>
+      <p class="lead" id="win-text">Все пары найдены.</p>
+      <div class="results">
+        <div><b id="r-moves">0</b><small>ходов</small></div>
+        <div><b id="r-time">0:00</b><small>время</small></div>
+        <div><b id="r-words">0</b><small>слов</small></div>
+      </div>
+      <p class="new-record" id="new-record" hidden>Новый рекорд!</p>
+    </div>
+
+    <div class="win-actions">
+      <button class="btn" id="again">Ещё раз</button>
+      <button class="btn ghost" id="next">Следующий уровень</button>
+    </div>
+
+    <section class="dict" aria-labelledby="dict-title">
+      <h3 id="dict-title">Слова из этой игры</h3>
+      <ul class="dict-list" id="dict"></ul>
+    </section>
+
+    <aside class="channel">
+      <div class="channel-arch" aria-hidden="true"></div>
+      <h3>Эту игру я сделала сама с нейросетью</h3>
+      <p>Без программиста и без знания кода. Как я это делаю, показываю по шагам в канале про вайбкодинг.</p>
+      <a class="btn" href="https://t.me/+7o7OwzY7V0IyZmM6" target="_blank" rel="noopener">Перейти в канал</a>
+      <button class="link-btn" id="share">Поделиться игрой</button>
+    </aside>
+  </section>
+</body>
+</html>
