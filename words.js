@@ -25,3 +25,37 @@ window.WORDS = [
   { id: 'cloud', ar: 'سَحَابَة', read: 'сахаба', ru: 'облако', svg: `<g fill="#BFDDF2"><circle cx="36" cy="54" r="16"/><circle cx="54" cy="44" r="20"/><circle cx="70" cy="56" r="13"/><rect x="22" y="54" width="60" height="16" rx="8"/></g><circle cx="50" cy="40" r="7" fill="#E3F1FA"/>` },
 ];
 window.wordSVG = (w) => `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">${w.svg}</svg>`;
+
+// Числа 1–10: картинка — столько же кружков.
+const DOT_COLORS = ['#F29AB0', '#7CBF6B', '#F7C14B', '#6FA4D6', '#E9806E'];
+const dots = (n) => {
+  const rows = n <= 5 ? [n] : [Math.ceil(n / 2), Math.floor(n / 2)];
+  const r = n <= 3 ? 13 : 8.6, gap = n <= 3 ? 30 : 18.6, out = [];
+  rows.forEach((cnt, ri) => {
+    const y = rows.length === 1 ? 50 : 39 + ri * 22;
+    const x0 = 50 - ((cnt - 1) * gap) / 2;
+    for (let i = 0; i < cnt; i++) out.push(`<circle cx="${x0 + i * gap}" cy="${y}" r="${r}" fill="${DOT_COLORS[(out.length) % DOT_COLORS.length]}"/>`);
+  });
+  return out.join('');
+};
+const NUMBERS = [
+  ['وَاحِد', 'вахид', 'один'], ['اِثْنَان', 'иснан', 'два'], ['ثَلَاثَة', 'саляса', 'три'], ['أَرْبَعَة', 'арбаа', 'четыре'],
+  ['خَمْسَة', 'хамса', 'пять'], ['سِتَّة', 'ситта', 'шесть'], ['سَبْعَة', 'сабаа', 'семь'], ['ثَمَانِيَة', 'самания', 'восемь'],
+  ['تِسْعَة', 'тиса', 'девять'], ['عَشَرَة', 'ашара', 'десять'],
+].map(([ar, read, ru], i) => ({ id: 'n' + (i + 1), ar, read, ru, svg: dots(i + 1) }));
+
+// Цвета: клякса краски.
+const blob = (fill, stroke) => `<path d="M50 16c10 0 14 8 22 10s16 8 14 20-8 14-6 22-6 16-18 16-14-6-22-4-18-4-20-14 4-14 2-22 2-18 12-20 6-8 16-8z" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="3"` : ''}/><ellipse cx="38" cy="36" rx="7" ry="4" fill="#fff" opacity=".45" transform="rotate(-30 38 36)"/>`;
+const COLORS = [
+  ['red', 'أَحْمَر', 'ахмар', 'красный', '#E5534B'], ['blue', 'أَزْرَق', 'азрак', 'синий', '#3E7CC9'],
+  ['green', 'أَخْضَر', 'ахдар', 'зелёный', '#5BAA55'], ['yellow', 'أَصْفَر', 'асфар', 'жёлтый', '#F6C93E'],
+  ['white', 'أَبْيَض', 'абъяд', 'белый', '#FFFFFF', '#D8C3CA'], ['black', 'أَسْوَد', 'асвад', 'чёрный', '#33292D'],
+  ['orange', 'بُرْتُقَالِيّ', 'буртукали', 'оранжевый', '#F18A3A'], ['brown', 'بُنِّيّ', 'бунни', 'коричневый', '#8A5A3C'],
+  ['pink', 'وَرْدِيّ', 'варди', 'розовый', '#F29AB0'], ['gray', 'رَمَادِيّ', 'рамади', 'серый', '#9A9496'],
+].map(([id, ar, read, ru, fill, stroke]) => ({ id: 'c-' + id, ar, read, ru, svg: blob(fill, stroke) }));
+
+window.SETS = {
+  items: { name: 'Предметы', words: window.WORDS },
+  numbers: { name: 'Числа', words: NUMBERS },
+  colors: { name: 'Цвета', words: COLORS },
+};

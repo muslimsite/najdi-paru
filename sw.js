@@ -1,5 +1,5 @@
 // Работа без интернета: файлы игры хранятся в телефоне, шрифты сохраняются при первом запуске.
-const VERSION = 'najdi-paru-v1';
+const VERSION = 'najdi-paru-v2';
 const FILES = ['./', 'index.html', 'styles.css', 'app.js', 'words.js', 'favicon.svg', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {

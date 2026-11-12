@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Найди пару – арабские слова для детей</title>
-  <meta name="description" content="Игра на память для детей: открывай карточки, находи пары и запоминай 20 арабских слов.">
+  <title>Арабские слова – игры для детей</title>
+  <meta name="description" content="Игры для детей: найди пару и «Что это?». 40 арабских слов: предметы, числа и цвета.">
   <meta name="theme-color" content="#FCEFF2">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://muslimsite.github.io/najdi-paru/">
@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Найди пару">
+  <meta name="apple-mobile-web-app-title" content="Учим слова">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,8 +21,8 @@
   <link rel="stylesheet" href="styles.css">
   <script src="words.js" defer></script>
   <script src="app.js" defer></script>
-  <meta property="og:title" content="Найди пару – арабские слова для детей">
-  <meta property="og:description" content="Игра на память для детей: открывай карточки, находи пары и запоминай 20 арабских слов.">
+  <meta property="og:title" content="Арабские слова – игры для детей">
+  <meta property="og:description" content="Игры для детей: найди пару и «Что это?». 40 арабских слов: предметы, числа и цвета.">
   <meta property="og:image" content="https://muslimsite.github.io/najdi-paru/og.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -30,13 +30,42 @@
 <body>
   <canvas id="confetti" aria-hidden="true"></canvas>
 
-  <!-- Экран 1: начало -->
-  <main class="screen start" id="start">
+  <!-- Меню -->
+  <main class="screen home" id="home">
     <div class="start-arches" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-    <p class="kicker">Игра на память</p>
-    <h1>Найди пару</h1>
-    <p class="lead">Открывай карточки, ищи одинаковые и запоминай арабские слова.</p>
+    <p class="kicker">Игры для детей</p>
+    <h1>Арабские слова</h1>
+    <p class="lead">Выбирай тему и игру. На каждой карточке картинка, слово по-арабски и как оно читается.</p>
 
+    <p class="label" id="themes-label">Тема</p>
+    <div class="themes" role="radiogroup" aria-labelledby="themes-label">
+      <button class="theme" role="radio" data-set="items"><b>Предметы</b><span>20 слов</span></button>
+      <button class="theme" role="radio" data-set="numbers"><b>Числа</b><span>10 слов</span></button>
+      <button class="theme" role="radio" data-set="colors"><b>Цвета</b><span>10 слов</span></button>
+    </div>
+
+    <div class="games">
+      <button class="game-card" id="go-pairs">
+        <svg class="gc-art" viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-9 36 56)"><path d="M20 82V40a16 16 0 0 1 32 0v42a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4z" fill="#F7B8C6"/><path d="M28 74V44a8 8 0 0 1 16 0v30z" fill="none" stroke="#fff" stroke-width="3.5"/></g><g transform="rotate(8 64 54)"><path d="M48 80V38a16 16 0 0 1 32 0v42a4 4 0 0 1-4 4H52a4 4 0 0 1-4-4z" fill="#fff" stroke="#D9577A" stroke-width="3"/><circle cx="64" cy="54" r="7" fill="#F7C14B"/></g></svg>
+        <span class="gc-text"><b>Найди пару</b><span>Открывай карточки и ищи одинаковые</span></span>
+      </button>
+      <button class="game-card" id="go-quiz">
+        <svg class="gc-art" viewBox="0 0 100 100" aria-hidden="true"><path d="M30 84V38a20 20 0 0 1 40 0v46a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4z" fill="#B9DCC9"/><path d="M42 44a8 8 0 1 1 11 7.4c-2 .9-3 2.5-3 4.6v3" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="71" r="3.8" fill="#fff"/></svg>
+        <span class="gc-text"><b>Что это?</b><span>Смотри на картинку и выбирай слово</span></span>
+      </button>
+    </div>
+
+    <button class="btn ghost install" id="install" hidden>Поставить на экран телефона</button>
+    <p class="install-hint" id="ios-hint" hidden>Чтобы поставить игры на экран iPhone: нажми «Поделиться» внизу Safari, потом «На экран Домой».</p>
+    <a class="made" href="https://t.me/+7o7OwzY7V0IyZmM6" target="_blank" rel="noopener">Игры сделала сама с нейросетью. Как – в канале про вайбкодинг</a>
+  </main>
+
+  <!-- Найди пару: уровень -->
+  <section class="screen start" id="pairs" hidden>
+    <button class="icon-btn corner" data-home aria-label="В меню"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <p class="kicker" id="pairs-theme">Предметы</p>
+    <h2 class="title">Найди пару</h2>
+    <p class="lead">Сначала карточки открыты, запоминай. Потом ищи одинаковые.</p>
     <div class="levels" role="radiogroup" aria-label="Уровень">
       <button class="lvl" role="radio" data-level="0"><b>Малыш</b><span>6 пар</span></button>
       <button class="lvl" role="radio" data-level="1"><b>Ученик</b><span>10 пар</span></button>
@@ -44,11 +73,7 @@
     </div>
     <p class="record" id="record" aria-live="polite"></p>
     <button class="btn" id="play">Играть</button>
-    <button class="btn ghost install" id="install" hidden>Поставить на экран телефона</button>
-    <p class="install-hint" id="ios-hint" hidden>Чтобы поставить игру на экран iPhone: нажми «Поделиться» внизу Safari, потом «На экран Домой».</p>
-
-    <a class="made" href="https://t.me/+7o7OwzY7V0IyZmM6" target="_blank" rel="noopener">Игру сделала сама с нейросетью. Как – в канале про вайбкодинг</a>
-  </main>
+  </section>
 
   <!-- Экран 2: игра -->
   <section class="screen game" id="game" hidden>
@@ -65,6 +90,20 @@
     <div class="streak" id="streak" aria-live="polite"></div>
   </section>
 
+  <!-- Что это? -->
+  <section class="screen quiz" id="quiz" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-home aria-label="В меню"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="stat"><span id="q-step">1/10</span><small>вопрос</small></div>
+      <div class="stat"><span id="q-score">0</span><small>верно</small></div>
+      <div class="stat"><span id="q-time">0:00</span><small>время</small></div>
+    </header>
+    <div class="q-track" aria-hidden="true"><i id="q-bar"></i></div>
+    <div class="q-ask" id="q-ask"></div>
+    <p class="q-task" id="q-task"></p>
+    <div class="q-options" id="q-options"></div>
+  </section>
+
   <!-- Плашка найденного слова -->
   <div class="toast" id="toast" aria-live="polite" hidden></div>
 
@@ -75,7 +114,7 @@
       <h2>МашаАллах!</h2>
       <p class="lead" id="win-text">Все пары найдены.</p>
       <div class="results">
-        <div><b id="r-moves">0</b><small>ходов</small></div>
+        <div><b id="r-moves">0</b><small id="r-moves-l">ходов</small></div>
         <div><b id="r-time">0:00</b><small>время</small></div>
         <div><b id="r-words">0</b><small>слов</small></div>
       </div>
@@ -85,6 +124,7 @@
     <div class="win-actions">
       <button class="btn" id="again">Ещё раз</button>
       <button class="btn ghost" id="next">Следующий уровень</button>
+      <button class="btn ghost" data-home>Другие игры</button>
     </div>
 
     <section class="dict" aria-labelledby="dict-title">
@@ -94,7 +134,7 @@
 
     <aside class="channel">
       <div class="channel-arch" aria-hidden="true"></div>
-      <h3>Эту игру я сделала сама с нейросетью</h3>
+      <h3>Эти игры я сделала сама с нейросетью</h3>
       <p>Без программиста и без знания кода. Как я это делаю, показываю по шагам в канале про вайбкодинг.</p>
       <a class="btn" href="https://t.me/+7o7OwzY7V0IyZmM6" target="_blank" rel="noopener">Перейти в канал</a>
       <button class="link-btn" id="share">Поделиться игрой</button>

@@ -1,4 +1,4 @@
-// «Найди пару»: логика игры. Слова и картинки — words.js.
+// «Арабские слова»: меню, «Найди пару», «Что это?». Слова и картинки — words.js.
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
@@ -7,8 +7,10 @@
     { name: 'Ученик', pairs: 10, peek: 3000 },
     { name: 'Знаток', pairs: 20, peek: 4500 },
   ];
+  const QUIZ_ROUNDS = 10;
   const BACKS = ['var(--b1)', 'var(--b2)', 'var(--b3)', 'var(--b4)'];
   const CONFETTI = ['#F7B8C6', '#B9DCC9', '#F8D58F', '#BFD3F2', '#D9577A'];
+  const SCREENS = ['home', 'pairs', 'game', 'quiz', 'win'];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const params = new URLSearchParams(location.search);
 
@@ -18,29 +20,52 @@
     set(k, v) { try { localStorage.setItem('najdi-paru:' + k, JSON.stringify(v)); } catch { /* без сохранения */ } },
   };
 
+  let set = SETS[store.get('set', 'items')] ? store.get('set', 'items') : 'items';
   let level = store.get('level', 0);
+  let mode = 'pairs'; // какая игра сейчас: pairs | quiz
   let deck = [], open = [], found = 0, moves = 0, streak = 0;
   let startedAt = 0, timerId = 0, elapsed = 0, lock = true, toastTimer = 0;
+  let rounds = [], round = 0, score = 0, firstTry = true;
 
+  const words = () => SETS[set].words;
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const fmt = (ms) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
-  const show = (id) => { ['start', 'game', 'win'].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); };
-  const pairWord = (n) => (n % 10 === 1 && n % 100 !== 11 ? 'пара' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'пары' : 'пар');
-  const moveWord = (n) => (n % 10 === 1 && n % 100 !== 11 ? 'ход' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'хода' : 'ходов');
+  const plural = (n, one, few, many) => (n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : many);
+  const show = (id) => { SCREENS.forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); };
+  const maxLevel = () => LEVELS.reduce((m, L, i) => (L.pairs <= words().length ? i : m), 0);
+  const bestKey = () => (set === 'items' ? `best-${level}` : `best-${set}-${level}`);
 
-  /* ---------- Начало ---------- */
+  /* ---------- Меню ---------- */
+  function renderThemes() {
+    document.querySelectorAll('.theme').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.set === set)));
+  }
+  document.querySelectorAll('.theme').forEach((b) => b.addEventListener('click', () => {
+    set = b.dataset.set; store.set('set', set); renderThemes();
+  }));
+  $('go-pairs').addEventListener('click', () => { renderLevels(); show('pairs'); });
+  $('go-quiz').addEventListener('click', () => startQuiz());
+  document.querySelectorAll('[data-home]').forEach((b) => b.addEventListener('click', goHome));
+  $('back').addEventListener('click', () => { stopTimer(); hideToast(true); renderLevels(); show('pairs'); });
+  function goHome() { stopTimer(); hideToast(true); renderThemes(); show('home'); }
+
+  /* ---------- Найди пару: уровень ---------- */
   function renderLevels() {
-    document.querySelectorAll('.lvl').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.level === level)));
-    const r = store.get('best-' + level, null);
-    $('record').textContent = r ? `Твой рекорд: ${r.moves} ${moveWord(r.moves)}, ${fmt(r.time)}` : '';
+    const top = maxLevel();
+    if (level > top) level = top;
+    $('pairs-theme').textContent = SETS[set].name;
+    document.querySelectorAll('.lvl').forEach((b) => {
+      b.hidden = +b.dataset.level > top;
+      b.setAttribute('aria-checked', String(+b.dataset.level === level));
+    });
+    const r = store.get(bestKey(), null);
+    $('record').textContent = r ? `Твой рекорд: ${r.moves} ${plural(r.moves, 'ход', 'хода', 'ходов')}, ${fmt(r.time)}` : '';
   }
   document.querySelectorAll('.lvl').forEach((b) => b.addEventListener('click', () => {
     level = +b.dataset.level; store.set('level', level); renderLevels();
   }));
   $('play').addEventListener('click', () => startGame());
-  $('back').addEventListener('click', () => { stopTimer(); hideToast(true); renderLevels(); show('start'); });
 
-  /* ---------- Поле ---------- */
+  /* ---------- Найди пару: поле ---------- */
   function layoutBoard() {
     const n = deck.length, wide = innerWidth >= 700;
     const cols = n <= 12 ? (wide ? 6 : 3) : n <= 20 ? (wide ? 5 : 4) : (wide ? 8 : 5);
@@ -60,9 +85,10 @@
   }
 
   function startGame() {
-    const L = LEVELS[level];
-    const words = shuffle(WORDS.slice()).slice(0, L.pairs);
-    deck = shuffle(words.flatMap((w) => [w, w]));
+    mode = 'pairs';
+    const L = LEVELS[Math.min(level, maxLevel())];
+    const picked = shuffle(words().slice()).slice(0, L.pairs);
+    deck = shuffle(picked.flatMap((w) => [w, w]));
     open = []; found = 0; moves = 0; streak = 0; elapsed = 0; startedAt = 0;
     stopTimer(); updateBar();
     const backs = shuffle(deck.map((_, i) => BACKS[i % BACKS.length]));
@@ -114,12 +140,10 @@
     found++; streak++;
     a.classList.add('done'); b.classList.add('done');
     updateBar();
-    const w = deck[a.dataset.i];
-    showToast(w);
-    burstFrom(a); burstFrom(b);
-    if (navigator.vibrate) { try { navigator.vibrate(18); } catch { /* нет вибрации */ } }
+    showToast(deck[a.dataset.i]);
+    burstFrom(a); burstFrom(b); buzz();
     if (streak >= 2) say(streak === 2 ? 'Две подряд!' : streak === 3 ? 'Три подряд!' : `${streak} подряд!`);
-    if (found === deck.length / 2) setTimeout(win, reduced ? 300 : 1100);
+    if (found === deck.length / 2) setTimeout(winPairs, reduced ? 300 : 1100);
   }
 
   function miss(a, b) {
@@ -138,14 +162,72 @@
   }
   function startTimer() {
     startedAt = Date.now();
-    timerId = setInterval(() => { elapsed = Date.now() - startedAt; $('time').textContent = fmt(elapsed); }, 250);
+    const out = mode === 'quiz' ? $('q-time') : $('time');
+    timerId = setInterval(() => { elapsed = Date.now() - startedAt; out.textContent = fmt(elapsed); }, 250);
   }
-  function stopTimer() { clearInterval(timerId); timerId = 0; if (startedAt) elapsed = Date.now() - startedAt; }
+  function stopTimer() { clearInterval(timerId); timerId = 0; if (startedAt) elapsed = Date.now() - startedAt; startedAt = 0; }
+  function buzz() { if (navigator.vibrate) { try { navigator.vibrate(18); } catch { /* нет вибрации */ } } }
 
   function say(text) {
     const s = $('streak'); s.textContent = text;
     s.classList.remove('show'); void s.offsetWidth; s.classList.add('show');
   }
+
+  /* ---------- Что это? ---------- */
+  function startQuiz() {
+    mode = 'quiz';
+    const pool = words();
+    rounds = shuffle(pool.slice()).slice(0, Math.min(QUIZ_ROUNDS, pool.length));
+    round = 0; score = 0; elapsed = 0; startedAt = 0; streak = 0;
+    stopTimer();
+    $('q-score').textContent = '0'; $('q-time').textContent = '0:00';
+    show('quiz');
+    startTimer();
+    renderRound();
+  }
+
+  function renderRound() {
+    const w = rounds[round], pool = words();
+    const others = shuffle(pool.filter((x) => x.id !== w.id)).slice(0, 2);
+    const options = shuffle([w, ...others]);
+    const askPic = round % 2 === 0; // чётные вопросы: картинка → слово; нечётные: слово → картинка
+    firstTry = true; lock = false;
+    $('q-step').textContent = `${round + 1}/${rounds.length}`;
+    $('q-bar').style.setProperty('--p', round / rounds.length);
+    const ask = $('q-ask');
+    ask.className = 'q-ask ' + (askPic ? 'is-pic' : 'is-word');
+    ask.innerHTML = askPic
+      ? `<span class="pic">${wordSVG(w)}</span>`
+      : `<span class="ar" lang="ar">${w.ar}</span><span class="read">${w.read}</span>`;
+    $('q-task').textContent = askPic ? 'Как это по-арабски?' : 'Где это слово?';
+    const box = $('q-options');
+    box.className = 'q-options ' + (askPic ? 'words' : 'pics');
+    box.innerHTML = options.map((o) => `<button class="opt" data-id="${o.id}">${askPic
+      ? `<span class="ar" lang="ar">${o.ar}</span><small>${o.read}</small>`
+      : `<span class="pic">${wordSVG(o)}</span><span class="sr">${o.ru}</span>`}</button>`).join('');
+    if (!reduced) { ask.classList.remove('enter'); void ask.offsetWidth; ask.classList.add('enter'); }
+  }
+
+  $('q-options').addEventListener('click', (e) => {
+    const btn = e.target.closest('.opt');
+    if (!btn || lock || btn.disabled) return;
+    const w = rounds[round];
+    if (btn.dataset.id === w.id) {
+      lock = true;
+      btn.classList.add('right');
+      if (firstTry) { score++; streak++; } else streak = 0;
+      $('q-score').textContent = score;
+      burstFrom(btn); buzz(); showToast(w);
+      if (streak >= 3) say(`${streak} подряд!`);
+      setTimeout(() => {
+        round++;
+        if (round < rounds.length) renderRound(); else { $('q-bar').style.setProperty('--p', 1); setTimeout(winQuiz, 300); }
+      }, reduced ? 700 : 1400);
+    } else {
+      firstTry = false; streak = 0;
+      btn.classList.add('wrong'); btn.disabled = true;
+    }
+  });
 
   /* ---------- Плашка слова ---------- */
   function showToast(w) {
@@ -165,29 +247,57 @@
   /* ---------- Победа ---------- */
   const STAR = (on) => `<svg viewBox="0 0 24 24" class="${on ? 'on' : ''}"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" fill="${on ? '#F6C445' : '#F3D4DC'}" stroke="${on ? '#F6C445' : '#F3D4DC'}" stroke-width="2" stroke-linejoin="round"/></svg>`;
 
-  function win(demo) {
+  function showWin({ stars, text, big, bigLabel, list, record, canNext }) {
     stopTimer(); hideToast(true);
+    $('stars').innerHTML = [1, 2, 3].map((n) => STAR(n <= stars)).join('');
+    $('win-text').textContent = text;
+    $('r-moves').textContent = big; $('r-moves-l').textContent = bigLabel;
+    $('r-time').textContent = fmt(elapsed);
+    $('r-words').textContent = list.length;
+    $('new-record').hidden = !record;
+    $('next').hidden = !canNext;
+    $('dict').innerHTML = list.map((w) => `<li><span class="pic">${wordSVG(w)}</span><span class="ar" lang="ar">${w.ar}</span><small>${w.read} – ${w.ru}</small></li>`).join('');
+    show('win');
+    if (!reduced) rain();
+  }
+
+  function winPairs(demo) {
+    stopTimer();
     const pairs = deck.length / 2;
     const stars = moves <= pairs * 1.5 ? 3 : moves <= pairs * 2.2 ? 2 : 1;
-    $('stars').innerHTML = [1, 2, 3].map((n) => STAR(n <= stars)).join('');
-    $('win-text').textContent = stars === 3 ? 'Все пары найдены, и почти без ошибок!' : stars === 2 ? 'Все пары найдены. Ещё раз, и будет три звезды!' : 'Все пары найдены. Чем больше играешь, тем лучше память.';
-    $('r-moves').textContent = moves;
-    $('r-time').textContent = fmt(elapsed);
-    $('r-words').textContent = pairs;
-    const best = store.get('best-' + level, null);
+    const best = store.get(bestKey(), null);
     const better = !demo && (!best || moves < best.moves || (moves === best.moves && elapsed < best.time));
-    if (better) store.set('best-' + level, { moves, time: elapsed });
-    $('new-record').hidden = !(better && best);
-    $('next').hidden = level >= LEVELS.length - 1;
-    const seen = [...new Map(deck.map((w) => [w.id, w])).values()];
-    $('dict').innerHTML = seen.map((w) => `<li><span class="pic">${wordSVG(w)}</span><span class="ar" lang="ar">${w.ar}</span><small>${w.read} – ${w.ru}</small></li>`).join('');
-    show('win');
-    if (!reduced) { rain(); }
+    if (better) store.set(bestKey(), { moves, time: elapsed });
+    showWin({
+      stars,
+      text: stars === 3 ? 'Все пары найдены, и почти без ошибок!' : stars === 2 ? 'Все пары найдены. Ещё раз, и будет три звезды!' : 'Все пары найдены. Чем больше играешь, тем лучше память.',
+      big: moves, bigLabel: plural(moves, 'ход', 'хода', 'ходов'),
+      list: [...new Map(deck.map((w) => [w.id, w])).values()],
+      record: better && !!best,
+      canNext: level < maxLevel(),
+    });
   }
-  $('again').addEventListener('click', () => startGame());
-  $('next').addEventListener('click', () => { level = Math.min(level + 1, LEVELS.length - 1); store.set('level', level); startGame(); });
+
+  function winQuiz() {
+    stopTimer();
+    const n = rounds.length;
+    const stars = score >= n * 0.9 ? 3 : score >= n * 0.6 ? 2 : 1;
+    const key = 'quiz-' + set, best = store.get(key, -1);
+    if (score > best) store.set(key, score);
+    showWin({
+      stars,
+      text: stars === 3 ? 'Ты знаешь почти все слова!' : stars === 2 ? 'Хорошо! Сыграй ещё, и будет три звезды.' : 'Сыграй в «Найди пару», а потом возвращайся сюда.',
+      big: `${score}/${n}`, bigLabel: 'верно',
+      list: rounds,
+      record: best >= 0 && score > best,
+      canNext: false,
+    });
+  }
+
+  $('again').addEventListener('click', () => (mode === 'quiz' ? startQuiz() : startGame()));
+  $('next').addEventListener('click', () => { level = Math.min(level + 1, maxLevel()); store.set('level', level); startGame(); });
   $('share').addEventListener('click', async () => {
-    const data = { title: 'Найди пару', text: 'Игра для детей: запоминаем арабские слова', url: location.href.split('?')[0] };
+    const data = { title: 'Арабские слова', text: 'Игры для детей: запоминаем арабские слова', url: location.href.split('?')[0] };
     try {
       if (navigator.share) await navigator.share(data);
       else { await navigator.clipboard.writeText(data.url); $('share').textContent = 'Ссылка скопирована'; }
@@ -231,7 +341,6 @@
     raf = requestAnimationFrame(step);
   }
 
-  /* ---------- Старт ---------- */
   /* ---------- Установка на экран телефона ---------- */
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => { /* без работы офлайн */ });
@@ -249,11 +358,15 @@
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (ios && !standalone) $('ios-hint').hidden = false;
 
+  /* ---------- Старт ---------- */
+  renderThemes();
   renderLevels();
-  // Для проверки: ?demo=win сразу показывает экран победы.
-  if (params.get('demo') === 'win') {
-    const L = LEVELS[level];
-    deck = WORDS.slice(0, L.pairs).flatMap((w) => [w, w]); moves = Math.round(L.pairs * 1.4); elapsed = 64000;
-    win(true);
-  }
+  // Для проверки: ?demo=win — экран победы, ?demo=quiz — «Что это?», ?demo=pairs — выбор уровня.
+  const demo = params.get('demo');
+  if (demo === 'win') {
+    const L = LEVELS[Math.min(level, maxLevel())];
+    deck = words().slice(0, L.pairs).flatMap((w) => [w, w]); moves = Math.round(L.pairs * 1.4); elapsed = 64000;
+    winPairs(true);
+  } else if (demo === 'quiz') startQuiz();
+  else if (demo === 'pairs') show('pairs');
 })();
