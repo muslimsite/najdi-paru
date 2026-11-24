@@ -26,25 +26,11 @@ window.WORDS = [
 ];
 window.wordSVG = (w) => `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">${w.svg}</svg>`;
 
-// Числа 1–10: картинка — столько же кружков.
-const DOT_COLORS = ['#F29AB0', '#7CBF6B', '#F7C14B', '#6FA4D6', '#E9806E'];
-const dots = (n) => {
-  if (n > 10) {
-    const out = [], r = 7, gap = 16, rows = Math.ceil(n / 5), y0 = 50 - ((rows - 1) * gap) / 2;
-    for (let i = 0; i < n; i++) {
-      const row = Math.floor(i / 5), col = i % 5, cnt = Math.min(5, n - row * 5);
-      out.push(`<circle cx="${50 + (col - (cnt - 1) / 2) * gap}" cy="${y0 + row * gap}" r="${r}" fill="${i < 10 ? '#6FA4D6' : '#F29AB0'}"/>`);
-    }
-    return out.join('');
-  }
-  const rows = n <= 5 ? [n] : [Math.ceil(n / 2), Math.floor(n / 2)];
-  const r = n <= 3 ? 13 : 8.6, gap = n <= 3 ? 30 : 18.6, out = [];
-  rows.forEach((cnt, ri) => {
-    const y = rows.length === 1 ? 50 : 39 + ri * 22;
-    const x0 = 50 - ((cnt - 1) * gap) / 2;
-    for (let i = 0; i < cnt; i++) out.push(`<circle cx="${x0 + i * gap}" cy="${y}" r="${r}" fill="${DOT_COLORS[(out.length) % DOT_COLORS.length]}"/>`);
-  });
-  return out.join('');
+// Числа 1–20: на картинке крупная цифра.
+const digit = (n) => {
+  const two = n > 9, size = two ? 56 : 78, base = two ? 69 : 76;
+  const c = ['#E9806E', '#6FA4D6', '#5BAA55', '#E8719A', '#E8A93A'][(n - 1) % 5];
+  return `<text x="50" y="${base}" text-anchor="middle" font-family="Comfortaa, system-ui, sans-serif" font-weight="700" font-size="${size}" fill="${c}">${n}</text>`;
 };
 const NUMBERS = [
   ['وَاحِد', 'вахид', 'один'], ['اِثْنَان', 'иснан', 'два'], ['ثَلَاثَة', 'саляса', 'три'], ['أَرْبَعَة', 'арбаа', 'четыре'],
@@ -54,7 +40,7 @@ const NUMBERS = [
   ['أَرْبَعَةَ عَشَر', 'арбаата ашар', 'четырнадцать'], ['خَمْسَةَ عَشَر', 'хамсата ашар', 'пятнадцать'], ['سِتَّةَ عَشَر', 'ситта ашар', 'шестнадцать'],
   ['سَبْعَةَ عَشَر', 'сабата ашар', 'семнадцать'], ['ثَمَانِيَةَ عَشَر', 'саманията ашар', 'восемнадцать'], ['تِسْعَةَ عَشَر', 'тисата ашар', 'девятнадцать'],
   ['عِشْرُون', 'ишруна', 'двадцать'],
-].map(([ar, read, ru], i) => ({ id: 'n' + (i + 1), ar, read, ru, svg: dots(i + 1) }));
+].map(([ar, read, ru], i) => ({ id: 'n' + (i + 1), ar, read, ru, svg: digit(i + 1) }));
 
 // Цвета: клякса краски.
 const blob = (fill, stroke) => `<path d="M50 16c10 0 14 8 22 10s16 8 14 20-8 14-6 22-6 16-18 16-14-6-22-4-18-4-20-14 4-14 2-22 2-18 12-20 6-8 16-8z" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="3"` : ''}/><ellipse cx="38" cy="36" rx="7" ry="4" fill="#fff" opacity=".45" transform="rotate(-30 38 36)"/>`;
